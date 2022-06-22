@@ -4,10 +4,10 @@ apt update
 apt install git nginx python3 python3-pip python3-venv python3-dev libmariadb-dev ufw -y
 
 useradd -m toto
-su - toto -c "git clone https://github.com/ldsvrn/SAE24 /home/toto/"
+su - toto -c "git clone https://github.com/ldsvrn/SAE24 /home/toto/CLONE"
 chmod 774 /home/toto/django/user_install.sh
 
-su - toto -c '/home/toto/django/user_install.sh'
+su - toto -c '/home/toto/CLONE/django/user_install.sh'
 
 cat << EOS > /etc/systemd/system/gunicorn.socket
 [Unit]
@@ -39,7 +39,7 @@ EOF
 systemctl start gunicorn.socket
 systemctl enable gunicorn.socket
 
-cat << EOF > /etc/nginx/sites-available/sae23
+cat << EOF > /etc/nginx/sites-available/sae24
 server {
     listen 80;
     server_name django-serv.rt13.lab;
@@ -56,7 +56,7 @@ server {
 }
 EOF
 
-ln -s /etc/nginx/sites-available/sae23 /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/sae24 /etc/nginx/sites-enabled/
 
 systemctl restart nginx
 
