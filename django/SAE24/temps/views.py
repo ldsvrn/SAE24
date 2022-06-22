@@ -5,6 +5,9 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.forms.models import model_to_dict
 import csv
 
+def index(request):
+    return render(request, 'index.html')
+
 def liste_sensors(request):
     sensors = Sensors.objects.all()
     return render(request, 'sensors/liste.html', {'sensors': sensors})

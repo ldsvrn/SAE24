@@ -8,7 +8,7 @@
 }
 
 .body{
-    background-image: linear-gradient(#0a53be, pink);
+    background-image: linear-gradient(red, darkred);
     height: 100vh;
     background-attachment: fixed;
 }
@@ -41,10 +41,6 @@
     margin: auto;
 }
 
-
-
-
-
 .content {
         background-color: rgba(0, 0, 0, 0.5);
         color: #fff0c2;
@@ -64,4 +60,9 @@
 .btn-main{
     text-decoration: none  ;
     color: #fff;
+}
+
+.table {
+    background-color: rgba(240,248,255, 0.8);
+    border-radius: 10px;
 }
