@@ -10,9 +10,9 @@ from os import remove
 import random
 
 try:
-    db=_mysql.connect("172.113.40.3","root","admin", "temp")
+    db=_mysql.connect("mysql.rt13.lab","root","admin", "temp")
 except OperationalError:
-    db=_mysql.connect("172.113.40.3","root","admin")
+    db=_mysql.connect("mysql.rt13.lab","root","admin")
     db.query("CREATE DATABASE temp")
     db.query("USE temp")
 
