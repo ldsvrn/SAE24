@@ -30,7 +30,7 @@ After=network.target
 User=toto
 Group=www-data
 WorkingDirectory=/home/toto/CLONE/django/SAE24
-ExecStart=/home/toto/CLONE/django/.venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock SAE23.wsgi:application
+ExecStart=/home/toto/CLONE/django/SAE24/.venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock SAE24.wsgi:application
 
 [Install]
 WantedBy=multi-user.target
