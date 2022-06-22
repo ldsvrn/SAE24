@@ -1,0 +1,14 @@
+{% extends "template.html" %}
+
+{% block title %}SAÉ24{% endblock title %}
+
+{% block p %}
+Bienvenue sur le site réalisé pour la SAÉ24
+{% endblock p %}
+
+{% block content %}
+<div class="list-group">
+    <a class="btn btn-primary " href="/sensors/liste">Liste des capteurs</a>
+    <a class="btn btn-primary " href="/data/liste">Liste des données</a>
+</div>
+{% endblock content %}
