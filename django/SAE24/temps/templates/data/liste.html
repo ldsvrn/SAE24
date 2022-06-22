@@ -1,0 +1,42 @@
+{% extends "template.html" %}
+
+{% block refresh %}<meta http-equiv="refresh" content="10">{% endblock refresh %}
+
+{% block title %}Températures{% endblock title %}
+
+{% block h1 %}Températures{% endblock h1 %}
+
+
+{% block content %}
+<table class="table is-fullwidth is-hoverable">
+    <thead>
+    <tr>
+        <th><abbr title="ID">ID</abbr></th>
+        <th>Timestamp</th>
+        <th>Temp</th>
+        <th>@MAC</th>
+        <th>Pièce</th>
+        <th>Emplacement</th>
+        <th>Nom</th>
+        <th class="text-end">Actions</th>
+    </tr>
+    </thead>
+    {% for temps in data %}
+    <tbody>
+    <tr>
+        <td><a class="ID" href="">{{temps.id}} </a></td>
+        <td>{{temps.datetime}}</td>
+        <td>{{temps.temp}}</td>
+        <td>{{temps.sensor.macaddr}}</td>
+        <td>{{temps.sensor.piece}}</td>
+        <td>{{temps.sensor.emplacement}}</td>
+        <td>{{temps.sensor.nom}}</td>
+        <td class="text-end">
+            <a type="button" class="btn btn-info" href="">PASS</a>
+        </td>
+    </tr>
+    </tbody>
+    {% endfor %}
+</table>
+
+{% endblock content %}

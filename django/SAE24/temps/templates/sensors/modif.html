@@ -1,0 +1,15 @@
+{% extends "template.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Modifier un capteur{% endblock title %}
+
+{% block h1 %}Modifier un capteur{% endblock h1 %} 
+
+{% block content %}
+
+<form method="post" action="/sensors/save/{{id}}">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <input type="submit" class="btn btn-success" value="Valider"\>
+</form>
+{% endblock content %}

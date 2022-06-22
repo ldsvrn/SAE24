@@ -61,7 +61,6 @@ def export_csv(request, id):
             i.sensor.piece,
             i.sensor.emplacement,
             i.sensor.nom,
-            i.temp]
-            )
+            i.temp])
 
     return response

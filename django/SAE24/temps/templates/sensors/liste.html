@@ -1,0 +1,40 @@
+{% extends "template.html" %}
+
+{% block refresh %}<meta http-equiv="refresh" content="10">{% endblock refresh %}
+
+{% block title %}Capteurs{% endblock title %}
+
+{% block h1 %}Capteurs{% endblock h1 %}
+
+
+{% block content %}
+<table class="table is-fullwidth is-hoverable">
+    <thead>
+    <tr>
+        <th><abbr title="ID">ID</abbr></th>
+        <th>@MAC</th>
+        <th>Pièce</th>
+        <th>Emplacement</th>
+        <th>Nom</th>
+        <th class="text-end">Actions</th>
+    </tr>
+    </thead>
+    {% for sensor in sensors %}
+    <tbody>
+    <tr>
+        <td><a class="ID" href="">{{sensor.id}}</a></td>
+        <td>{{sensor.macaddr}}</td>
+        <td>{{sensor.piece}}</td>
+        <td>{{sensor.emplacement}}</td>
+        <td>{{sensor.nom}}</td>
+        <td class="text-end">
+            <a type="button" class="btn btn-info" href="/sensors/modif/{{sensor.id}}">Modifier</a>
+            <a type="button" class="btn btn-info" href="/sensors/data/{{sensor.id}}">Données</a>
+            <a type="button" class="btn btn-info" href="/sensors/csv/{{sensor.id}}">CSV</a>
+        </td>
+    </tr>
+    </tbody>
+    {% endfor %}
+</table>
+
+{% endblock content %}
