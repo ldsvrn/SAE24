@@ -5,7 +5,7 @@ apt install git nginx python3 python3-pip python3-venv python3-dev libmariadb-de
 
 useradd -m toto
 su - toto -c "git clone https://github.com/ldsvrn/SAE24 /home/toto/CLONE"
-chmod 774 /home/toto/django/user_install.sh
+chmod 774 /home/toto/CLONE/django/user_install.sh
 
 su - toto -c '/home/toto/CLONE/django/user_install.sh'
 
@@ -29,8 +29,8 @@ After=network.target
 [Service]
 User=toto
 Group=www-data
-WorkingDirectory=/home/toto/django/SAE24
-ExecStart=/home/toto/django/.venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock SAE23.wsgi:application
+WorkingDirectory=/home/toto/CLONE/django/SAE24
+ExecStart=/home/toto/CLONE/django/.venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock SAE23.wsgi:application
 
 [Install]
 WantedBy=multi-user.target
@@ -46,7 +46,7 @@ server {
 
     location = /favicon.ico { access_log off; log_not_found off; }
     location /static/ {
-        root /home/toto/django/SAE24;
+        root /home/toto/CLONE/django/SAE24;
     }
 
     location / {
