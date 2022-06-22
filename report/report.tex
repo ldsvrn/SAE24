@@ -41,7 +41,58 @@
 
 \newpage
 \section{Collecte}
+    \subsection{Connexion au brocker MQTT}
+    Pour nous connecter au Brocker MQTT, nous allons utiliser le paquet Python \verb|paho-mqtt| que nous pouvons installer avec \verb|pip install|. Une fois le paquet installé, nous pouvons créer un simple script pour nous abonner à notre topic ainsi que d'imprimer les messages dans le terminal.
 
+    \begin{listing}[H]
+        \begin{minted}[breaklines]{python}
+import paho.mqtt.client as mqtt
+
+def on_connect(client, userdata, flags, rc):
+    print("Connected with result code "+str(rc))
+    client.subscribe("IUT/Colmar/SAE24/Maison1")
+
+def on_message(client, userdata, msg):
+    print(msg.topic+" "+str(msg.payload))
+
+client = mqtt.Client()
+client.on_connect = on_connect
+client.on_message = on_message
+
+client.connect("test.mosquitto.org", port=1883, keepalive=60)
+
+client.loop_forever()
+        \end{minted}
+        \caption{Simple script imprimant les messages MQTT}
+        \label{mqtt:code-exemple}
+    \end{listing}
+    On remarque que l'on crée deux fonctions \verb|on_connect| et \verb|on_message|, la première est exécutée lors de la connexion au brocker tandis que la deuxième est exécutée lors de la réception d'un message MQTT. 
+    Nous pouvons donc utiliser ces fonctions pour nos analyses et nos opérations SQL.
+
+    \subsection{Écriture d'un parser pour les données MQTT}
+    Les données envoyées par les capteurs sont présentées sous un format \emph{csv} (Comma-separated values) comme en exemple ci-dessous (Code \ref{mqtt:raw-exemple}). 
+    \begin{listing}[H]
+        \begin{minted}[breaklines]{text}
+Id=B8A5F3569EFF,piece=sejour,date=22/06/2022,time=21:23:53,temp=11.56
+        \end{minted}
+        \caption{Exemple de message brut}
+        \label{mqtt:raw-exemple}
+    \end{listing}
+    Il est donc facile de séparer ces valeurs avec Python grâce à la méthode \verb|split(',')|. Nous remarquons que chaque valeur est précédée de \verb|=|. 
+    Comme nous avons pas besoin de tout ce qui est avant le signe égal, nous pouvons utiliser la même méthode que précédemment pour ne garder uniquement les valeurs utiles.
+
+    \begin{listing}[H]
+        \begin{minted}[breaklines]{python}
+mac_addr= payload[0].split("=")[1]
+piece= payload[1].split("=")[1]
+dt= datetime.strptime(payload[2].split("=")[1] + " " + payload[3].split("=")[1],
+                    '%d/%m/%Y %H:%M:%S')
+temp= payload[4].split("=")[1]
+        \end{minted}
+        \caption{Séparation des valeurs}
+        \label{mqtt:separation-valeurs}
+    \end{listing}
+    En Code \ref{mqtt:separation-valeurs} nous utilisons également la méthode \verb|strptime(str, format)| de l'objet \emph{datetime}, qui nous permettera, en spécifiant le format de la date d'origine, d'importer la date en format ISO 8601 dans la base de données.  
 \newpage
-\newpage{Web}
+\section{Web}
 \end{document}
