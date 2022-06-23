@@ -1,0 +1,15 @@
+{% extends "template.html" %}
+
+{% block title %}Chercher entre deux dates{% endblock title %}
+
+{% block h1 %}Chercher entre deux dates{% endblock h1 %} 
+
+{% block content %}
+
+<form method="post" action="/sensors/filtre_liste/{{id}}">
+    {% csrf_token %}
+    <input type="datetime-local" class="form-control" id="startDate" name="startDate" placeholder="Date de début">
+    <input type="datetime-local" class="form-control" id="endDate" name="endDate" placeholder="Date de fin">
+    <input type="submit" class="btn btn-success" value="Valider"\>
+</form>
+{% endblock content %}

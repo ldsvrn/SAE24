@@ -13,7 +13,7 @@
 
 <body class="body">
 
-<nav class="navbar navbar-dark justify-content-center" style="background-color: red;">
+<nav id="page" class="navbar navbar-dark justify-content-center" style="background-color: red;">
 
     <a class="navbar-brand fs-1" href="/">Site de la SAÉ24
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-globe"
@@ -24,6 +24,23 @@
     <div class="float-right">
     </div>
 </nav>
+
+<div class="container mt-3">
+        <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link" href="/">Accueil</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/sensors/liste">Capteurs</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/data/liste">Données</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/data/filtre">Filtre de date</a>
+        </li>
+        </ul>
+</div>
 
 <div id="content" class="main w-75 m-auto">
     <h1 class="fs-3 text-center">{% block h1 %}{% endblock h1 %}</h1>

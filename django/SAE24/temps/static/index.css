@@ -66,3 +66,53 @@
     background-color: rgba(240,248,255, 0.8);
     border-radius: 10px;
 }
+.nav {
+background-color:blue;
+text-align:right;
+}
+
+.nav-link {
+font-family: Gill Sans Extrabold, sans-serif; font-size: 25px;
+color:white;
+}
+
+.nav-tabs{
+background-color:#4f4d4d;
+text-align:right;
+}
+
+h1{
+color:white;
+font-weight:bold;
+}
+
+.nav-link:hover {
+font-family: Gill Sans Extrabold, sans-serif; font-size: 25px;
+color:white;
+}
+
+#haut{
+Position:fixed;
+right: -09em;
+bottom: 1.8em;
+}
+
+#bas{
+Position:fixed;
+left: 05em;
+bottom: 2em;
+}
+
+#image2 {
+width : 12%;
+height : 12%;
+}
+#image1 {
+width : 21%;
+height : 12%;
+}
+
+.Intro {
+margin-left: 20%;
+width: 100%;
+}

@@ -1,6 +1,6 @@
 {% extends "template.html" %}
 
-{% block refresh %}<meta http-equiv="refresh" content="10">{% endblock refresh %}
+{% block refresh %}{% endblock refresh %}
 
 {% block title %}Capteurs{% endblock title %}
 
@@ -31,6 +31,7 @@
             <a type="button" class="btn btn-info" href="/sensors/modif/{{sensor.id}}">Modifier</a>
             <a type="button" class="btn btn-info" href="/sensors/data/{{sensor.id}}">Données</a>
             <a type="button" class="btn btn-info" href="/sensors/csv/{{sensor.id}}">CSV</a>
+            <a type="button" class="btn btn-info" href="/sensors/filtre/{{sensor.id}}">Filtre dates</a>
         </td>
     </tr>
     </tbody>

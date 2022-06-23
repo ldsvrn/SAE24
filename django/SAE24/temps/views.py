@@ -7,6 +7,11 @@ from django.forms.models import model_to_dict
 from datetime import datetime
 import csv
 
+global refresh
+global refresh_time
+refresh = True
+refresh_time = 20
+
 def index(request):
     return render(request, 'index.html')
 
@@ -16,7 +21,7 @@ def liste_sensors(request):
 
 def liste_data(request):
     data = SensorsData.objects.all()
-    return render(request, 'data/liste.html', {'data': data, 'refresh': True})
+    return render(request, 'data/liste.html', {'data': data, 'refresh': refresh, 'refresh_time': refresh_time})
 
 def modif_sensors(request, id):
     obj = Sensors.objects.get(id=id)
@@ -82,3 +87,14 @@ def filtre_par_date(request):
     print(end)
     data = SensorsData.objects.filter(datetime__range=(start, end))
     return render(request, 'data/liste.html', {'data': data, 'refresh': False})
+
+def filtre_par_date_et_capteur(request, id):
+    start = datetime.fromisoformat(request.POST["startDate"])
+    end = datetime.fromisoformat(request.POST["endDate"])
+    print(start)
+    print(end)
+    data = SensorsData.objects.filter(datetime__range=(start, end), sensor = id) 
+    return render(request, 'data/liste.html', {'data': data, 'refresh': False})
+
+def page_filtre_sensors(request, id):
+    return render(request, 'sensors/filtre.html', {'id': id})
