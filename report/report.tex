@@ -41,8 +41,25 @@
 
 \newpage
 \section{Collecte}
+    \subsection{Connexion à la base de données}
+    Nous avons décidé d'utiliser la deuxième option du sujet, c'est à dire un script Python ajoutant directement les valeurs récupérées\footnote{Nous verrons dans la section \ref{section:web} comment nous avons déployé notre serveur MySQL}. 
+    En Python il existe plusieurs moyen d'accéder à une base de données, ici nous avons utilisé \verb|mysqlclient|, la même librairie utilisée par Django.
+    \begin{listing}[H]
+        \begin{minted}[breaklines]{python}
+try:
+    db=_mysql.connect("mysql.rt13.lab","root","admin", "temp")
+except OperationalError:
+    db=_mysql.connect("mysql.rt13.lab","root","admin")
+    db.query("CREATE DATABASE temp")
+    db.query("USE temp")
+        \end{minted}
+        \caption{Connexion BDD}
+        \label{mqtt:bdd-conn}
+    \end{listing}
+    Voici, en Code \ref{mqtt:bdd-conn}, l'extrait de notre script qui permet de se connecter à notre serveur MySQL. Le "try, except" permet ici de créer la base de données "temp" si elle n'existe pas. Après cela, nous utilisons des requêtes SQL pour créer les deux tables de notre base de données, nous nous attarderons sur cela dans la section \ref{section:web}.
     \subsection{Connexion au brocker MQTT}
-    Pour nous connecter au Brocker MQTT, nous allons utiliser le paquet Python \verb|paho-mqtt| que nous pouvons installer avec \verb|pip install|. Une fois le paquet installé, nous pouvons créer un simple script pour nous abonner à notre topic ainsi que d'imprimer les messages dans le terminal.
+    Pour nous connecter au Brocker MQTT, nous allons utiliser le paquet Python \verb|paho-mqtt| que nous pouvons installer avec \verb|pip install|.
+    Une fois le paquet installé, nous pouvons créer un simple script pour nous abonner à notre topic ainsi que d'imprimer les messages dans le terminal.
 
     \begin{listing}[H]
         \begin{minted}[breaklines]{python}
@@ -79,7 +96,7 @@ Id=B8A5F3569EFF,piece=sejour,date=22/06/2022,time=21:23:53,temp=11.56
         \label{mqtt:raw-exemple}
     \end{listing}
     Il est donc facile de séparer ces valeurs avec Python grâce à la méthode \verb|split(',')|. Nous remarquons que chaque valeur est précédée de \verb|=|. 
-    Comme nous avons pas besoin de tout ce qui est avant le signe égal, nous pouvons utiliser la même méthode que précédemment pour ne garder uniquement les valeurs utiles.
+    Comme nous n'avons pas besoin de tout ce qui est avant le signe égal, nous pouvons utiliser la même méthode que précédemment pour ne garder uniquement les valeurs utiles.
 
     \begin{listing}[H]
         \begin{minted}[breaklines]{python}
@@ -92,7 +109,8 @@ temp= payload[4].split("=")[1]
         \caption{Séparation des valeurs}
         \label{mqtt:separation-valeurs}
     \end{listing}
-    En Code \ref{mqtt:separation-valeurs} nous utilisons également la méthode \verb|strptime(str, format)| de l'objet \emph{datetime}, qui nous permettera, en spécifiant le format de la date d'origine, d'importer la date en format ISO 8601 dans la base de données.  
+    En Code \ref{mqtt:separation-valeurs} nous utilisons également la méthode \verb|strptime(str, format)| de l'objet \emph{datetime}, qui nous permettra, en spécifiant le format de la date d'origine, d'importer la date en format ISO 8601 dans la base de données.
 \newpage
 \section{Web}
+\label{section:web}
 \end{document}

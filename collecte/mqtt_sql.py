@@ -10,9 +10,9 @@ from os import remove
 import random
 
 try:
-    db=_mysql.connect("mysql.rt13.lab","root","admin", "temp")
+    db=_mysql.connect("mysql.rt13.lab", "root", "admin", "temp")
 except OperationalError:
-    db=_mysql.connect("mysql.rt13.lab","root","admin")
+    db=_mysql.connect("mysql.rt13.lab", "root", "admin")
     db.query("CREATE DATABASE temp")
     db.query("USE temp")
 
@@ -49,6 +49,9 @@ def on_connect(client, userdata, flags, rc):
     # reconnect then subscriptions will be renewed.
     client.subscribe("IUT/Colmar/SAE24/Maison1")
 
+global dico_macaddr
+dico_macaddr = {}
+
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     # On vérifie un peu si qqun ne s'ammuse pas a envoyer n'importe quoi sur le brocker
@@ -66,15 +69,17 @@ def on_message(client, userdata, msg):
                             '%d/%m/%Y %H:%M:%S')
         temp= payload[4].split("=")[1]
 
-        try:
-            db.query(f"INSERT INTO sensors (macaddr, piece) VALUES ('{mac_addr}', '{piece}')")
-        except Exception:
-            pass
-
-        db.query(f"SELECT id FROM sensors WHERE macaddr='{mac_addr}'")
-        id = int(db.store_result().fetch_row()[0][0])
-
-        sql_data = f"INSERT INTO sensors_data (sensor_id, datetime, temp) VALUES ({id}, '{dt.strftime('%Y-%m-%d %H:%M:%S')}', {temp})"
+        if mac_addr not in dico_macaddr.keys():
+            print("macaddr")
+            try:
+                db.query(f"INSERT INTO sensors (macaddr, piece) VALUES ('{mac_addr}', '{piece}')")
+            except Exception:
+                pass
+            db.query(f"SELECT id FROM sensors WHERE macaddr='{mac_addr}'")
+            id = int(db.store_result().fetch_row()[0][0])
+            dico_macaddr[mac_addr] = id
+        print ("test" )
+        sql_data = f"INSERT INTO sensors_data (sensor_id, datetime, temp) VALUES ({dico_macaddr[mac_addr]}, '{dt.strftime('%Y-%m-%d %H:%M:%S')}', {temp})"
         print(sql_data)
 
         reachable = True
