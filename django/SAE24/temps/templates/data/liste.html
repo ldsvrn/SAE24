@@ -1,6 +1,11 @@
 {% extends "template.html" %}
 
-{% block refresh %}<meta http-equiv="refresh" content="10">{% endblock refresh %}
+{% block refresh %}
+{% if refresh %}
+    <meta http-equiv="refresh" content="10">
+{% endif %}
+{% endblock refresh %}
+
 
 {% block title %}Températures{% endblock title %}
 
@@ -18,22 +23,22 @@
         <th>Pièce</th>
         <th>Emplacement</th>
         <th>Nom</th>
-        <th class="text-end">Actions</th>
+        {% comment %} <th class="text-end">Actions</th> {% endcomment %}
     </tr>
     </thead>
     {% for temps in data %}
     <tbody>
     <tr>
-        <td><a class="ID" href="">{{temps.id}} </a></td>
+        <td>{{temps.id}}</td>
         <td>{{temps.datetime}}</td>
         <td>{{temps.temp}}</td>
         <td>{{temps.sensor.macaddr}}</td>
         <td>{{temps.sensor.piece}}</td>
         <td>{{temps.sensor.emplacement}}</td>
         <td>{{temps.sensor.nom}}</td>
-        <td class="text-end">
+        {% comment %} <td class="text-end">
             <a type="button" class="btn btn-info" href="">PASS</a>
-        </td>
+        </td> {% endcomment %}
     </tr>
     </tbody>
     {% endfor %}

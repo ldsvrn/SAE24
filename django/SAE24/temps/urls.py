@@ -8,6 +8,8 @@ urlpatterns = [
     path('sensors/save/<int:id>', views.save_modif_sensors),
     path('sensors/data/<int:id>', views.filtre_par_sensor),
     path('sensors/csv/<int:id>', views.export_csv),
-
-    path('data/liste', views.liste_data)
+    
+    path('data/liste', views.liste_data),
+    path('data/filtre', views.page_filtre),
+    path('data/liste_filtre', views.filtre_par_date)
 ]

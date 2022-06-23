@@ -1,8 +1,10 @@
+from urllib import request
 from django.shortcuts import render
 from .models import Sensors, SensorsData
 from .forms import SensorsForm
 from django.http import HttpResponseRedirect, HttpResponse
 from django.forms.models import model_to_dict
+from datetime import datetime
 import csv
 
 def index(request):
@@ -14,7 +16,7 @@ def liste_sensors(request):
 
 def liste_data(request):
     data = SensorsData.objects.all()
-    return render(request, 'data/liste.html', {'data': data})
+    return render(request, 'data/liste.html', {'data': data, 'refresh': True})
 
 def modif_sensors(request, id):
     obj = Sensors.objects.get(id=id)
@@ -67,3 +69,16 @@ def export_csv(request, id):
             i.temp])
 
     return response
+
+
+def page_filtre(request):
+    return render(request, 'data/filtre.html')
+
+
+def filtre_par_date(request):
+    start = datetime.fromisoformat(request.POST["startDate"])
+    end = datetime.fromisoformat(request.POST["endDate"])
+    print(start)
+    print(end)
+    data = SensorsData.objects.filter(datetime__range=(start, end))
+    return render(request, 'data/liste.html', {'data': data, 'refresh': False})
