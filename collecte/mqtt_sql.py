@@ -70,7 +70,6 @@ def on_message(client, userdata, msg):
         temp= payload[4].split("=")[1]
 
         if mac_addr not in dico_macaddr.keys():
-            print("macaddr")
             try:
                 db.query(f"INSERT INTO sensors (macaddr, piece) VALUES ('{mac_addr}', '{piece}')")
             except Exception:
@@ -78,7 +77,7 @@ def on_message(client, userdata, msg):
             db.query(f"SELECT id FROM sensors WHERE macaddr='{mac_addr}'")
             id = int(db.store_result().fetch_row()[0][0])
             dico_macaddr[mac_addr] = id
-        print ("test" )
+
         sql_data = f"INSERT INTO sensors_data (sensor_id, datetime, temp) VALUES ({dico_macaddr[mac_addr]}, '{dt.strftime('%Y-%m-%d %H:%M:%S')}', {temp})"
         print(sql_data)
 

@@ -43,7 +43,7 @@
 \section{Collecte}
     \subsection{Connexion à la base de données}
     Nous avons décidé d'utiliser la deuxième option du sujet, c'est à dire un script Python ajoutant directement les valeurs récupérées\footnote{Nous verrons dans la section \ref{section:web} comment nous avons déployé notre serveur MySQL}. 
-    En Python il existe plusieurs moyen d'accéder à une base de données, ici nous avons utilisé \verb|mysqlclient|, la même librairie utilisée par Django.
+    En Python il existe plusieurs moyens d'accéder à une base de données, ici nous avons utilisé \verb|mysqlclient|, la même librairie utilisée par Django.
     \begin{listing}[H]
         \begin{minted}[breaklines]{python}
 try:
@@ -64,6 +64,7 @@ except OperationalError:
     \begin{listing}[H]
         \begin{minted}[breaklines]{python}
 import paho.mqtt.client as mqtt
+import random
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
@@ -72,7 +73,7 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     print(msg.topic+" "+str(msg.payload))
 
-client = mqtt.Client()
+client = mqtt.Client(client_id=f"client-grp13-{random.randint(1, 99999)}")
 client.on_connect = on_connect
 client.on_message = on_message
 
@@ -83,8 +84,9 @@ client.loop_forever()
         \caption{Simple script imprimant les messages MQTT}
         \label{mqtt:code-exemple}
     \end{listing}
-    On remarque que l'on crée deux fonctions \verb|on_connect| et \verb|on_message|, la première est exécutée lors de la connexion au brocker tandis que la deuxième est exécutée lors de la réception d'un message MQTT. 
+    On remarque dans le code \ref{mqtt:code-exemple} que l'on crée deux fonctions \verb|on_connect| et \verb|on_message|, la première est exécutée lors de la connexion au brocker tandis que la deuxième est exécutée lors de la réception d'un message MQTT. 
     Nous pouvons donc utiliser ces fonctions pour nos analyses et nos opérations SQL.
+    Nous définissons également un id unique grâce à \verb|random.randint|.
 
     \subsection{Écriture d'un parser pour les données MQTT}
     Les données envoyées par les capteurs sont présentées sous un format \emph{csv} (Comma-separated values) comme en exemple ci-dessous (Code \ref{mqtt:raw-exemple}). 
@@ -109,7 +111,52 @@ temp= payload[4].split("=")[1]
         \caption{Séparation des valeurs}
         \label{mqtt:separation-valeurs}
     \end{listing}
-    En Code \ref{mqtt:separation-valeurs} nous utilisons également la méthode \verb|strptime(str, format)| de l'objet \emph{datetime}, qui nous permettra, en spécifiant le format de la date d'origine, d'importer la date en format ISO 8601 dans la base de données.
+    En Code \ref{mqtt:separation-valeurs} nous utilisons également la méthode \verb|strptime(str, format)| de l'objet \verb|datetime|, qui nous permettra, en spécifiant le format de la date d'origine, d'importer la date en format ISO 8601 dans la base de données.
+
+    \subsection{Envoi des requêtes SQL}
+    Une fois les valeurs récupérées et séparés, nous pouvons nous atteler aux requêtes SQL. Cela commence à sortir du contexte de cette partie.
+    \begin{listing}[H]
+        \begin{minted}[breaklines]{python}
+if mac_addr not in dico_macaddr.keys():
+    try:
+        db.query(f"INSERT INTO sensors (macaddr, piece) VALUES ('{mac_addr}', '{piece}')")
+    except Exception:
+        pass
+    db.query(f"SELECT id FROM sensors WHERE macaddr='{mac_addr}'")
+    id = int(db.store_result().fetch_row()[0][0])
+    dico_macaddr[mac_addr] = id
+        \end{minted}
+        \caption{Dictionnaire des adresses MAC}
+        \label{mqtt:dico_mac}
+    \end{listing}
+    En code \ref{mqtt:dico_mac} nous utilisons un dictionnaire pour stocker les id correspondants aux adresses MAC, cela nous permet de limiter les requêtes à la base de données car nous avons besoin de cet id pour ajouter la température dans bonne table.
+
+    \begin{listing}[H]
+        \begin{minted}[breaklines]{python}
+sql_data = f"INSERT INTO sensors_data (sensor_id, datetime, temp) VALUES ({dico_macaddr[mac_addr]}, '{dt.strftime('%Y-%m-%d %H:%M:%S')}', {temp})"
+print(sql_data)
+
+reachable = True
+try:
+    db.query(sql_data)
+    reachable = True
+except Exception:
+    reachable = False
+    bak = open("backup.sql", "a")
+    bak.write(f"{sql_data}\n")
+    bak.close()
+
+if exists("backup.sql") and reachable:
+    with open('backup.sql') as f:
+        for line in f:
+            db.query(line)
+            remove('backup.sql')
+        \end{minted}
+        \caption{Envoi des données dans la BDD}
+        \label{mqtt:envoi-bdd}
+    \end{listing}
+    En code \ref{mqtt:envoi-bdd} nous utilisons des requêtes SQL pour simplement envoyer les données dans la base de données. 
+    Si la requête échoue après une déconnexion soudaine du serveur MySQL, les requêtes sont à la place écrite dans le fichier \verb|backup.sql| pour être exécutées une fois que la connexion est retrouvée\footnote{Ce code ne fonctionne pas dans certaines conditions, car dans certains cas, la librairie Python utilisée ne lance pas d'erreur, mais lance une boucle infinie qui bloque complètement l'exécution du script}.
 \newpage
 \section{Web}
 \label{section:web}
