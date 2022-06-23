@@ -38,11 +38,15 @@ def modif_sensors(request, id):
 def save_modif_sensors(request, id):
     objform = SensorsForm(request.POST)
     bak = Sensors.objects.get(id=id)
+    sensors = Sensors.objects.all()
     if objform.is_valid():
         objform = objform.save(commit=False)
         objform.id = id
         objform.macaddr = bak.macaddr
         objform.piece = bak.piece
+        for i in sensors:
+            if i.nom == objform.nom:
+                return HttpResponseRedirect(f"/sensors/modif/{id}")
         objform.save()
         return HttpResponseRedirect("/sensors/liste")
     else:
