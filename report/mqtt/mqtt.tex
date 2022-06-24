@@ -28,70 +28,11 @@
 
 \maketitle
 \tableofcontents
-\newpage
-\listoffigures
-\newpage
+%\listoffigures
 \listoflistings
-
 \newpage
-\section{Réseau}
-\subsection{Création des VLAN et routage inter-VLAN}
-\subsubsection{VLANs}
-Pour commencer nous avons dû créer quatre VLAN sur notre switch ainsi que de mettre en place le routage inter-VLAN. 
-Nous avons donc d'abord créé ces VLAN avec les commandes ci-dessous.
-\begin{listing}[H]
-    \begin{minted}[breaklines]{text}
-Switch(config)#int range fastEthernet 0/1-4
-Switch(config-if-range)#sw mode access 
-Switch(config-if-range)#sw access vlan 10
-% Access VLAN does not exist. Creating vlan 10
-    \end{minted}
-    \caption{Création d'un VLAN}
-    \label{reseau:switch:vlans}
-\end{listing}
-Nous avons répété les commandes en code \ref{reseau:switch:vlans} quatre fois en utilisant quatre interfaces par VLAN ainsi que les numéros 10, 20, 30 et 40. 
-Nous avons ensuite donné des noms à ces VLAN avec les commandes \verb|vlan <no>| puis \verb|name <nom>| en mode configuration.
-
-\begin{listing}[H]
-    \begin{minted}[breaklines]{text}
-VLAN Name                             Status    Ports
----- -------------------------------- --------- -------------------------------
-1    default                          active    Fa0/17, Fa0/18, Fa0/19, Fa0/20
-                                                Fa0/21, Fa0/22, Fa0/23, Fa0/24
-                                                Gig0/1, Gig0/2
-10   voix                             active    Fa0/1, Fa0/2, Fa0/3, Fa0/4
-20   users                            active    Fa0/5, Fa0/6, Fa0/7, Fa0/8
-30   server                           active    Fa0/9, Fa0/10, Fa0/11, Fa0/12
-40   admin                            active    Fa0/13, Fa0/14, Fa0/15, Fa0/16
-1002 fddi-default                     active    
-1003 token-ring-default               active    
-1004 fddinet-default                  active    
-1005 trnet-default                    active    
-    \end{minted}
-    \caption{Résultats de "sh vlan brief"}
-    \label{reseau:switch:sh-vlan}
-\end{listing}
-
-\subsubsection{Routage inter-VLAN}
-Une fois les VLAN correctement crées, nous avons besoin de configurer le routage inter-VLAN en utilisant l'encapsulation dot1Q.
-Pour cela, sur notre switch, nous avons choisi le port \verb|Fa0/24| comme port trunk.
-\begin{listing}[H]
-    \begin{minted}[breaklines]{text}
-Switch(config)#int fastEthernet 0/24
-Switch(config-if)#sw mode trunk 
-Switch(config-if)#sw trunk allowed vlan 10,20,30,40
-    \end{minted}
-    \caption{Configuration du port trunk}
-    \label{reseau:switch:trunk}
-\end{listing}
-
-\newpage
-\section{Téléphonie}
-
-\newpage
-\section{Collecte}
-    \subsection{Connexion à la base de données}
-    Nous avons décidé d'utiliser la deuxième option du sujet, c'est à dire un script Python ajoutant directement les valeurs récupérées\footnote{Nous verrons dans la section \ref{section:web} comment nous avons déployé notre serveur MySQL}. 
+\section{Connexion à la base de données}
+    Nous avons décidé d'utiliser la deuxième option du sujet, c'est à dire un script Python ajoutant directement les valeurs récupérées\footnote{Nous verrons dans le rapport Web/BDD comment nous avons déployé notre serveur MySQL}. 
     En Python il existe plusieurs moyens d'accéder à une base de données, ici nous avons utilisé \verb|mysqlclient|, la même librairie utilisée par Django.
     \begin{listing}[H]
         \begin{minted}[breaklines]{python}
@@ -106,7 +47,7 @@ except OperationalError:
         \label{mqtt:bdd-conn}
     \end{listing}
     Voici, en Code \ref{mqtt:bdd-conn}, l'extrait de notre script qui permet de se connecter à notre serveur MySQL. Le "try, except" permet ici de créer la base de données "temp" si elle n'existe pas. Après cela, nous utilisons des requêtes SQL pour créer les deux tables de notre base de données, nous nous attarderons sur cela dans la section \ref{section:web}.
-    \subsection{Connexion au brocker MQTT}
+    \section{Connexion au brocker MQTT}
     Pour nous connecter au Brocker MQTT, nous allons utiliser le paquet Python \verb|paho-mqtt| que nous pouvons installer avec \verb|pip install|.
     Une fois le paquet installé, nous pouvons créer un simple script pour nous abonner à notre topic ainsi que d'imprimer les messages dans le terminal.
 
@@ -137,7 +78,7 @@ client.loop_forever()
     Nous pouvons donc utiliser ces fonctions pour nos analyses et nos opérations SQL.
     Nous définissons également un id unique grâce à \verb|random.randint|.
 
-    \subsection{Écriture d'un parser pour les données MQTT}
+\section{Écriture d'un parser pour les données MQTT}
     Les données envoyées par les capteurs sont présentées sous un format \emph{csv} (Comma-separated values) comme en exemple ci-dessous (Code \ref{mqtt:raw-exemple}). 
     \begin{listing}[H]
         \begin{minted}[breaklines]{text}
@@ -162,7 +103,7 @@ temp= payload[4].split("=")[1]
     \end{listing}
     En Code \ref{mqtt:separation-valeurs} nous utilisons également la méthode \verb|strptime(str, format)| de l'objet \verb|datetime|, qui nous permettra, en spécifiant le format de la date d'origine, d'importer la date en format ISO 8601 dans la base de données.
 
-    \subsection{Envoi des requêtes SQL}
+    \section{Envoi des requêtes SQL}
     Une fois les valeurs récupérées et séparés, nous pouvons nous atteler aux requêtes SQL. Cela commence à sortir du contexte de cette partie.
     \begin{listing}[H]
         \begin{minted}[breaklines]{python}
@@ -206,7 +147,4 @@ if exists("backup.sql") and reachable:
     \end{listing}
     En code \ref{mqtt:envoi-bdd} nous utilisons des requêtes SQL pour simplement envoyer les données dans la base de données. 
     Si la requête échoue après une déconnexion soudaine du serveur MySQL, les requêtes sont à la place écrite dans le fichier \verb|backup.sql| pour être exécutées une fois que la connexion est retrouvée\footnote{Ce code ne fonctionne pas dans certaines conditions, car dans certains cas, la librairie Python utilisée ne lance pas d'erreur, mais lance une boucle infinie qui bloque complètement l'exécution du script}.
-\newpage
-\section{Web}
-\label{section:web}
 \end{document}
