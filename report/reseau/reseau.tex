@@ -2,10 +2,12 @@
 
 \documentclass{article}
 \usepackage[french]{babel}
-\author{Groupe 13}
-\title{Compte-rendus SAÉ24}
+\author{Louis DESVERNOIS, Alexis SCHOENN, Philippe DUBOIS}
+\title{%
+    SAÉ24: Réseau \\
+    \large Groupe 13}
 % \date{9 Juin 2022}
-\usepackage[margin=1in]{geometry}
+\usepackage[left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
 \usepackage{subcaption}
 \usepackage{listings}
 \usepackage{minted}
@@ -19,7 +21,7 @@
 \fancyhf{}
 \renewcommand{\headrulewidth}{0pt}
 \rfoot{\thepage}
-\lfoot{SAÉ24}
+\lfoot{SAÉ24: Groupe 13}
 
 \renewcommand{\listoflistingscaption}{Table des codes}
 \renewcommand{\listingscaption}{Code}
@@ -81,4 +83,37 @@ Switch(config-if)#sw trunk allowed vlan 10,20,30,40
     \caption{Configuration du port trunk}
     \label{reseau:switch:trunk}
 \end{listing}
+Le trunk étant activé, nous pouvons à présent créer les interfaces virtuelles sur le routeur. Nous avons besoin d'en créer quatre, une par VLAN. 
+Au niveau de nos adresses IP, étant le groupe 13, nous pouvons utiliser les réseaux \verb|172.113.x.0/24| avec \verb|x| le numéro de VLAN. Les adresses choisies pour les gateways et les SVI seront respectivement la dernière et l'avant-dernière adresse de chaque réseau.
+\begin{listing}[H]
+    \begin{minted}[breaklines]{text}
+interface FastEthernet0/0
+    no ip address
+!
+interface FastEthernet0/0.10
+    encapsulation dot1Q 10
+    ip address 172.113.10.254 255.255.255.0
+!
+interface FastEthernet0/0.20
+    encapsulation dot1Q 20
+    ip address 172.113.20.254 255.255.255.0
+!
+interface FastEthernet0/0.30
+    encapsulation dot1Q 30
+    ip address 172.113.30.254 255.255.255.0
+!
+interface FastEthernet0/0.40
+    encapsulation dot1Q 40
+    ip address 172.113.40.254 255.255.255.0
+    \end{minted}
+    \caption{Création des interfaces virtuelles sur le routeur}
+    \label{router:sub-int}
+\end{listing}
+Nous pouvons également en profiter pour configurer l'interface connectée à Internet en DHCP avec la commande \verb|ip address dhcp| en mode configuration d'interface.
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{fig/router-dhcp.png}
+    \caption{sh ip int brief}
+    \label{router:shipintbrief}
+\end{figure}
+Comme nous pouvons le voir en Figure \ref{router:shipintbrief}, le routeur à bien récupéré une adresse IP avec DHCP et nous interfaces virtuelles ont correctement été configurées\footnote{Le protocole et en "down" sur Fa0/0 car au moment de la prise de la capture d'écran, un câble cassé étais utilisé}.  
 \end{document}
