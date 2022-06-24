@@ -115,5 +115,48 @@ Nous pouvons également en profiter pour configurer l'interface connectée à In
     \caption{sh ip int brief}
     \label{router:shipintbrief}
 \end{figure}
-Comme nous pouvons le voir en Figure \ref{router:shipintbrief}, le routeur à bien récupéré une adresse IP avec DHCP et nous interfaces virtuelles ont correctement été configurées\footnote{Le protocole et en "down" sur Fa0/0 car au moment de la prise de la capture d'écran, un câble cassé étais utilisé}.  
+Comme nous pouvons le voir en Figure \ref{router:shipintbrief}, le routeur à bien récupéré une adresse IP avec DHCP et nous interfaces virtuelles ont correctement été configurées\footnote{Le protocole et en "down" sur Fa0/0 car au moment de la prise de la capture d'écran, un câble cassé étais utilisé}.
+\newpage
+\section{Mise en place du NAT et ACL}
+\subsection{NAT}
+Comme nous désirons utiliser Internet sur notre réseau, il est necéssaire de mettre en place un NAT. Pour cela, nous avons d'abord besoin de spécifier quelles interfaces se situent à l'intérieur du NAT et lequelles sont à l'extérieur.
+Nous allons exécuter la commandes \verb|ip nat inside| sur toutes les interfaces virtuelles et la commande \verb|ip nat outside|. Ensuite, il est necéssaire de créer un ACL "permit" avec toutes les adresses source qui seront traduites par le routeur.
+\begin{listing}[H]
+    \begin{minted}[breaklines]{text}
+Router(config)#ip access-list standard NAT
+Router(config-std-nacl)#permit 172.113.0.0 0.0.255.255
+Router(config-std-nacl)#exit
+Router(config)#int fastEthernet 0/0.10
+Router(config-subif)#ip nat inside
+Router(config-subif)#int fastEthernet 0/0.20
+Router(config-subif)#ip nat inside
+Router(config-subif)#int fastEthernet 0/0.30
+Router(config-subif)#ip nat inside
+Router(config-subif)#int fastEthernet 0/0.40
+Router(config-subif)#ip nat inside
+Router(config-subif)#exit
+Router(config)#ip nat inside source list NAT interface fastEthernet 0/1
+    \end{minted}
+    \caption{Configuration du NAT}
+    \label{router:nat}
+\end{listing}
+Une fois les commandes en code \ref{router:nat} sont exécutées et que les interfaces des PC sont correctement configurées, nous devrons être capables de nous connecter à Internet sur notre réseau.
+\subsection{DHCP}
+Maintenant que notre NAT est mis en place, il serait intéressant de configurer le DHCP dans notre réseau.
+Pour cela, nous allons utiliser notre Switch, qui est capable d'agir en tant que serveur DHCP.
+\begin{listing}[H]
+    \begin{minted}[breaklines]{text}
+Switch(config)#ip dhcp excluded-address 172.113.20.254
+Switch(config)#ip dhcp excluded-address 172.113.40.254
+Switch(dhcp-config)#ip dhcp pool vlan20
+Switch(dhcp-config)#network 172.113.20.0 255.255.255.0
+Switch(dhcp-config)#default-router 172.113.20.254
+Switch(dhcp-config)#ip dhcp pool vlan40
+Switch(dhcp-config)#network 172.113.40.0 255.255.255.0
+Switch(dhcp-config)#default-router 172.113.40.254
+    \end{minted}
+    \caption{Configuration du DHCP}
+    \label{switch:dhcp}
+\end{listing}
+Les VLAN 10 et 30 ne sont pas configurés, car ceux-ci ne doivent pas utiliser le DHCP, en effet le DHCP du PABX présent sur le VLAN 10 entre en conflit et les serveurs du VLAN 30 sont configurés en statique.
 \end{document}
