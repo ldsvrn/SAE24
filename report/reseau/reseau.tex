@@ -14,6 +14,7 @@
 \usepackage{graphicx}
 \usepackage[T1]{fontenc}
 \usepackage[colorlinks=true,linkcolor=black,anchorcolor=black,citecolor=black,filecolor=black,menucolor=black,runcolor=black,urlcolor=black]{hyperref}
+
 %\setcounter{tocdepth}{1} % pour la profondeur de la ToC
 
 \usepackage{fancyhdr}
@@ -241,4 +242,18 @@ Switch(dhcp-config)#dns-server 172.113.30.1
 Nous pouvons éventuellement créer des zones de recherches inversées qui peuvent permettent d'obtenir le nom de domaine d'une machine en fonction de leur adresse IP.
 \subsection{Serveur FTP}
 Pour mettre en place le serveur FTP, nous avons utilisé le serveur web IIS de Microsoft.
+La procédure pour installer les composants est la même que pour le serveur DNS, il est cependant nécessaire de décocher les options serveur HTTP ainsi que de cocher le serveur FTP lors de l'installation.
+Il faut ensuite ouvrir le gestionnaire comme pour le serveur DNS, puis de cliquer sur \emph{Ajouter un site FTP...} afin de pouvoir sélectionner un répertoire ainsi qu'un utilisateur qui sera utilisé pour le serveur.
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[scale=0.58]{fig/ftp1.png} % le max avant que l'image soit sur la page d'après
+    \end{center}
+    \caption{Ajout site FTP}
+    \label{serv:ftp1}
+\end{figure}
+
+\subsection{Serveur web}
+Pour notre serveur web, nous avons installé \verb|apache2| sur une machine virtuelle Debian 11 sans interface graphique avec la commande \verb|apt install apache2| exécutée avec l'utilisateur root.
+Après l'installation du paquet, le gestionnaire de paquets apt activement le service apache, aucune autre configuration est donc nécessaire.
+Nous pouvons désormais ajouter nos pages statiques dans le répertoire \verb|/var/www/html| et y accéder dans un navigateur web avec le domaine \verb|www.rt13.lab| que nous avons configuré dans notre serveur DNS.
 \end{document}
