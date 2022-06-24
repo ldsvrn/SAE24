@@ -116,7 +116,13 @@ Nous pouvons également en profiter pour configurer l'interface connectée à In
     \label{router:shipintbrief}
 \end{figure}
 Comme nous pouvons le voir en Figure \ref{router:shipintbrief}, le routeur à bien récupéré une adresse IP avec DHCP et nous interfaces virtuelles ont correctement été configurées\footnote{Le protocole et en "down" sur Fa0/0 car au moment de la prise de la capture d'écran, un câble cassé étais utilisé}.
-\newpage
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[scale=0.75]{fig/shiproute.png}
+    \end{center}
+    \caption{sh ip route}
+    \label{router:shiproute}
+\end{figure}
 \section{Mise en place du NAT et ACL}
 \subsection{NAT}
 Comme nous désirons utiliser Internet sur notre réseau, il est necéssaire de mettre en place un NAT. Pour cela, nous avons d'abord besoin de spécifier quelles interfaces se situent à l'intérieur du NAT et lequelles sont à l'extérieur.
@@ -159,7 +165,6 @@ Switch(dhcp-config)#default-router 172.113.40.254
     \label{switch:dhcp}
 \end{listing}
 Les VLAN 10 et 30 ne sont pas configurés, car ceux-ci ne doivent pas utiliser le DHCP, en effet le DHCP du PABX présent sur le VLAN 10 entre en conflit et les serveurs du VLAN 30 sont configurés en statique.
-\newpage
 \subsection{ACL}
 Nous avons dû implémenter des ACL pour limiter les actions des utilisateurs des différents VLAN. Voici toutes les ACL que nous avons mis en place:
 \begin{itemize}
@@ -202,4 +207,38 @@ Nous les avons appliquées comme suit.
     \item ACL \verb|userBlockAdmin| en \emph{in} sur \verb|Fa0/0.40|
     \item ACL \verb|voix-no-internet| en \emph{in} sur \verb|Fa0/0.10|
 \end{itemize}
+
+\section{Mise en place des services}
+\subsection{Serveur DNS}
+Pour créer notre serveur DNS, nous avons utilisé Windows Server 2016 dans une machine virtuelle. Après avoir copié la machine virtuelle du répertoire "Master" nous avons configuré l'adresse IP statique \verb|172.113.30.1|, puis nous avons installé les composants nécessaires pour le DNS.
+Pour cela nous avons cliqué sur \emph{Ajouter des rôles et fonctionnalités} puis sélectionné \emph{Serveur DNS} dans le menu \emph{Rôles de serveurs}.
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[scale=0.55]{fig/dns1.png}
+    \end{center}
+    \caption{Création du serveur DNS}
+    \label{serv:dns1}
+\end{figure}
+Une fois le serveur installé, nous pouvons fait clic droit sur serveur et cliquer sur \emph{Gestionnaire DNS} pour rajouter une zone principale.
+Nous avons rajouté la zone de recherche principale \verb|rt13.lab|, qui sera notre domaine principal. Une fois la zone créée, nous pouvons ajouter des entrées A (ou AAAA). Ci-dessous en Figure \ref{serv:dns2}, notre configuration DNS avec nos serveurs.
+Nous pouvons désormais ajouter le serveur DNS et le nom de domaine dans les pools DHCP de notre Switch avec les commandes en code \ref{switch:dns-dhcp}.
+\begin{listing}[H]
+    \begin{minted}[breaklines]{text}
+Switch(config)#ip dhcp pool vlan10
+Switch(dhcp-config)#domain-name rt13.lab
+Switch(dhcp-config)#dns-server 172.113.30.1
+    \end{minted}
+    \caption{Ajout des nouvelles informations au serveur DHCP}
+    \label{switch:dns-dhcp}
+\end{listing}
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[scale=0.55]{fig/dns-config.png}
+    \end{center}
+    \caption{Création des sous domaines DNS}
+    \label{serv:dns2}
+\end{figure}
+Nous pouvons éventuellement créer des zones de recherches inversées qui peuvent permettent d'obtenir le nom de domaine d'une machine en fonction de leur adresse IP.
+\subsection{Serveur FTP}
+Pour mettre en place le serveur FTP, nous avons utilisé le serveur web IIS de Microsoft.
 \end{document}
