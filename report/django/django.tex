@@ -92,6 +92,115 @@ CREATE TABLE IF NOT EXISTS temp.sensors_data (
 \end{listing}
 
 \section{Création projet Django}
-\subsection{}
+\subsection{Initialisation}
+Pour commencer, nous avons besoin d'initialiser notre projet Django.
+Pour cela nous allons d'abord créer un environnement virtuel Python avec la commande \verb|python3 -m venv .venv| nous pouvons ensuite l'activer avec \verb|source .venv/bin/activate|.
+Une fois dans l'environnement virtuel, nous pouvons utiliser \verb|pip install| pour installer les paquets dont nous avons besoin, c'est-à-dire django, django-admin et mysqlclient\footnote{Nous avons également besoin d'installer le paquet mariadb-clients avec apt pour que l'installation fonctionne}.
+Avec tous les paquets installer, nous pouvons, exécuter les commandes \verb|django-admin startprojet sae24| pour initialiser le projet et \verb|django-admin startapp temp| pour créer l'application.
 
+\subsection{Connexion de Django à la base de données}
+Pour connecter Django à notre de base de données, nous devons modifier le fichier \verb|settings.py| du projet.
+\begin{listing}[H]
+    \begin{minted}[breaklines]{python}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'temp',
+        'USER': 'root',
+        'PASSWORD': 'admin',
+        'HOST': 'mysql.rt13.lab',
+        'PORT': '3306',
+    }
+}
+    \end{minted}
+    \caption{settings.py: connexion à la BDD}
+    \label{django:bddconn}
+\end{listing}
+Maintenant que nous sommes connectés à la base de données nous pouvons créer automatiquement le fichier \verb|models.py| en utilisant la commande \verb|./manage.py inspectdb > temp/models.py|.
+
+\subsection{Création du form}
+Nous pouvons maintenant créer le form pour les capteurs, qui nous permet de modifier le nom et l'emplacement du capteurs.
+\begin{listing}[H]
+    \begin{minted}[breaklines]{python}
+class SensorsForm(ModelForm):
+    class Meta:
+        model = models.Sensors
+        fields = ('emplacement', 'nom')
+        labels = {
+            'nom': 'Nom',
+            'emplacement': 'Emplacement'
+        }
+    \end{minted}
+    \caption{Formulaire pour les capteur}
+    \label{django:form}
+\end{listing}
+En code \ref{django:form} nous n'ajoutons pas les fields qui ne doivent pas changer dans la base de données.
+
+\newpage
+\subsection{Création des views}
+Maintenant que notre formulaire est créé, nous pouvons nous atteler à la création des views de notre projet.
+\subsubsection{Affichage}
+Les views d'affichage sont les plus simples à créer, en effet, il suffit de récupérer tous les objets d'un models et de les envoyer dans les templates HTML.
+\begin{listing}[H]
+    \begin{minted}[breaklines]{python}
+global refresh
+global refresh_time
+refresh = True
+refresh_time = 20
+
+def liste_sensors(request):
+    sensors = Sensors.objects.all()
+    return render(request, 'sensors/liste.html', {'sensors': sensors})
+
+def liste_data(request):
+    data = SensorsData.objects.all()
+    return render(request, 'data/liste.html', {'data': data, 'refresh': refresh, 'refresh_time': refresh_time})
+    \end{minted}
+    \caption{Views d'affichage}
+    \label{django:views:affichage}
+\end{listing}
+Les variables \verb|refresh| et \verb|refresh_time| permettent d'activer ou de désactiver le rafraîchissement automatiquement. 
+Les deux templates appelées ici sont quasiment identique, les seules différences sont le nombre de colonnes dans le tableau.
+
+\subsubsection{Modification}
+La modification des capteur se fait avec deux views, un de modification qui affiche le formulaire (code \ref{django:views:modif1}) et un autre qui enregistre les modifications dans la base de données (code \ref{django:views:modif2}).
+\begin{listing}[H]
+    \begin{minted}[breaklines]{python}
+def modif_sensors(request, id):
+    obj = Sensors.objects.get(id=id)
+    objform = SensorsForm(model_to_dict(obj))
+    if request.method == "POST":
+        form = SensorsForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect("/sensor/liste")
+    else:
+        return render(request, "sensors/modif.html", {"form": objform, "id": id})
+    \end{minted}
+    \caption{Views de Modification 1}
+    \label{django:views:modif1}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}[breaklines]{python}
+def save_modif_sensors(request, id):
+    objform = SensorsForm(request.POST)
+    bak = Sensors.objects.get(id=id)
+    sensors = Sensors.objects.all()
+    if objform.is_valid():
+        objform = objform.save(commit=False)
+        objform.id = id
+        objform.macaddr = bak.macaddr
+        objform.piece = bak.piece
+        for i in sensors:
+            if i.nom == objform.nom:
+                return HttpResponseRedirect(f"/sensors/modif/{id}")
+        objform.save()
+        return HttpResponseRedirect("/sensors/liste")
+    else:
+        return render(request, "sensors/modif.html", {"form": objform, "id": id})
+    \end{minted}
+    \caption{Views de Modification 2}
+    \label{django:views:modif2}
+\end{listing}
 \end{document}
