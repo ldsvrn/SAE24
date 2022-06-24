@@ -203,4 +203,57 @@ def save_modif_sensors(request, id):
     \caption{Views de Modification 2}
     \label{django:views:modif2}
 \end{listing}
+En code \ref{django:views:modif2}, nous créons une copie du capteur que nous souhaitons modifier sans cela, notre bouton modifier supprimerais l'adresse MAC et la pièce du capteur modifié, car notre form ne contient pas ces informations.
+
+\subsubsection{Views de Filtre}
+Pour créer des filtres facilement, nous pouvons utiliser la fonction \verb|filter()| des objets de model Django. Le filtre le plus simple est celui en code \ref{django:views:filtre1}, qui permet de filtrer les données par capteur.
+\begin{listing}[H]
+    \begin{minted}[breaklines]{python}
+def filtre_par_sensor(request, id):
+    data = SensorsData.objects.filter(sensor = id)
+    return render(request, 'data/liste.html', {'data': data})
+    \end{minted}
+    \caption{Filtre par capteur}
+    \label{django:views:filtre1}
+\end{listing}
+
+Nous pouvons cependant créer d'autres filtres plus complexes, par exemple, nous pouvons filtrer entre deux dates utilisant \verb|__range| et des objets \verb|datetime|. La création d'une template contenant un \verb|<form>| HTML est nécessaire.
+\begin{listing}[H]
+    \begin{minted}[breaklines]{html}
+<form method="post" action="/data/liste_filtre">
+    {% csrf_token %}
+    <input type="datetime-local" class="form-control" id="startDate" name="startDate" placeholder="Date de début">
+    <input type="datetime-local" class="form-control" id="endDate" name="endDate" placeholder="Date de fin">
+    <input type="submit" class="btn btn-success" value="Valider">
+</form>
+    \end{minted}
+    \caption{Template de filtre entre deux dates et heures}
+    \label{template:filtre}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}[breaklines]{python}
+def filtre_par_date(request):
+    start = datetime.fromisoformat(request.POST["startDate"])
+    end = datetime.fromisoformat(request.POST["endDate"])
+    data = SensorsData.objects.filter(datetime__range=(start, end))
+    return render(request, 'data/liste.html', {'data': data, 'refresh': False})
+    \end{minted}
+    \caption{Filtre entre deux dates et heures}
+    \label{django:views:filtre2}
+\end{listing}
+Nous pouvons également utiliser ces deux filtres en même temps en mettant en argument les deux conditions.
+
+\begin{listing}[H]
+    \begin{minted}[breaklines]{python}
+def filtre_par_date_et_capteur(request, id):
+    start = datetime.fromisoformat(request.POST["startDate"])
+    end = datetime.fromisoformat(request.POST["endDate"])
+    data = SensorsData.objects.filter(datetime__range=(start, end), sensor = id) 
+    return render(request, 'data/liste.html', {'data': data, 'refresh': False})
+    \end{minted}
+    \caption{Filtre par date et par capteur}
+    \label{django:views:filtre3}
+\end{listing}
+
 \end{document}
