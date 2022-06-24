@@ -159,4 +159,47 @@ Switch(dhcp-config)#default-router 172.113.40.254
     \label{switch:dhcp}
 \end{listing}
 Les VLAN 10 et 30 ne sont pas configurés, car ceux-ci ne doivent pas utiliser le DHCP, en effet le DHCP du PABX présent sur le VLAN 10 entre en conflit et les serveurs du VLAN 30 sont configurés en statique.
+\newpage
+\subsection{ACL}
+Nous avons dû implémenter des ACL pour limiter les actions des utilisateurs des différents VLAN. Voici toutes les ACL que nous avons mis en place:
+\begin{itemize}
+    \item ACL pour bloquer un site de commerce sur le VLAN users
+    \item ACL pour bloquer l'accès au serveur FTP pour tous les utilisateurs
+    \item ACL pour empêcher les utilisateurs la connexion aux utilisateurs du VLAN admin
+    \item ACL pour que le VLAN voix ai uniquement accès a son opérateur public ayant l'IP \verb|10.129.10.20|
+\end{itemize}
+\begin{listing}[H]
+    \begin{minted}[breaklines]{text}
+Router#sh access-list
+Standard IP access list NAT
+    10 permit 172.113.0.0, wildcard bits 0.0.255.255 (6034 matches)
+Extended IP access list cdiscount
+    10 deny ip host 204.74.99.103 172.113.20.0 0.0.0.255 (33 matches)
+    20 permit ip any any (235882 matches)
+Extended IP access list no-ftp
+    10 permit tcp 172.113.40.0 0.0.0.255 host 172.113.30.1 eq ftp (60 matches)
+    20 deny tcp any host 172.113.30.1 eq ftp (47 matches)
+    30 permit ip any any (6159 matches)
+Extended IP access list userBlockAdmin
+    10 permit icmp 172.113.40.0 0.0.0.255 172.113.20.0 0.0.0.255 (33 matches)
+    20 deny icmp 172.113.20.0 0.0.0.255 any echo
+    30 permit icmp 172.113.20.0 0.0.0.255 any echo-reply
+    40 permit tcp 172.113.20.0 0.0.0.255 any established
+    50 deny tcp 172.119.20.0 0.0.0.255 any
+    60 permit ip any any (2108 matches)
+Extended IP access list voix-no-internet
+    10 permit ip 172.113.10.0 0.0.0.255 host 10.129.10.20 (49912 matches)
+    20 deny ip any any (5607 matches) 
+    \end{minted}
+    \caption{ACL présentes sur notre routeur}
+    \label{router:acl}
+\end{listing}
+Les ACL présentées en code \ref{router:acl} sont ensuite appliquées en entrée ou en sorties sur les différentes interfaces avec les commandes \verb|ip access-group <nom_acl> in| et \verb|ip access-group <nom_acl> out| en mode configuration d'interfaces.
+Nous les avons appliquées comme suit.
+\begin{itemize}
+    \item ACL \verb|cdiscount| en \emph{out} sur \verb|Fa0/0.20|
+    \item ACL \verb|no-ftp| en \emph{out} sur \verb|Fa0/0.30|
+    \item ACL \verb|userBlockAdmin| en \emph{in} sur \verb|Fa0/0.40|
+    \item ACL \verb|voix-no-internet| en \emph{in} sur \verb|Fa0/0.10|
+\end{itemize}
 \end{document}
