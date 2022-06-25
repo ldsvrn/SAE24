@@ -15,7 +15,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[colorlinks=true,linkcolor=black,anchorcolor=black,citecolor=black,filecolor=black,menucolor=black,runcolor=black,urlcolor=black]{hyperref}
 
-%\setcounter{tocdepth}{1} % pour la profondeur de la ToC
+\setcounter{tocdepth}{2} % pour la profondeur de la ToC
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
@@ -371,10 +371,10 @@ server {
 }
         \end{minted}
         \caption{/etc/nginx/sites-available/sae24}
-        \label{code:sae23-site} 
+        \label{code:sae24-site} 
     \end{listing}
     Pour cet exemple, Nginx écoute sur le port 80 et si un client se connecte en utilisant le domaine \verb|django-serv.rt13.lab|, il redirige /static vers le répertoire configuré dans, le reste est redirigé vers le socket Gunicorn.
-    Une fois ce fichier crée, nous devons l'activer avec un lien symbolique créé par la commande \verb|ln -s /etc/nginx/sites-available/sae23 /etc/nginx/sites-enabled/|.
+    Une fois ce fichier crée, nous devons l'activer avec un lien symbolique créé par la commande \verb|ln -s /etc/nginx/sites-available/sae24 /etc/nginx/sites-enabled/|.
     Nous devons ensuite utiliser \verb|manage.py| pour faire un \verb|makemigration|, un \verb|migrate| ainsi qu'un \verb|collectstatic|.
 
     Pour finir, nous pouvons redémarrer le service Nginx avec la commande \verb|systemctl restart nginx| pour prendre en compte les changements. 
