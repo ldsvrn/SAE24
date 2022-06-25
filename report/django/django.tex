@@ -309,9 +309,75 @@ Voici un exemple simplifié de template utilisant un modèle avec \verb|{% exten
 </table>
 {% endblock content %}
     \end{minted}
-    \caption{}
+    \caption{Exemple de template de liste}
     \label{}
 \end{listing}
 
 \section{Déploiement}
+Pour le déploiement, nous avons utilisé un serveur Debian 11 sans interface graphique avec le serveur web Nginx ainsi que Gunicorn.
+Il n'est impossible de directement utiliser Nginx pour distribuer les pages de notre site, dans notre cas, nous allons le configurer comme un \emph{reverse proxy} à Gunicorn. {\bf Pour la partie qui suit, nous avons cloné le dépôt git de notre projet dans \verb|/home/toto/CLONE|.} Avant de déployer nous devons ajouter \verb|STATIC_ROOT = os.path.join(BASE_DIR, 'static')| au fichier \verb|settings.py|.
+\subsection{Gunicorn}
+    Pour commencer, nous devons créer deux fichiers pour interfacer systemd à Gunicorn, \verb|gunicorn.socket| et \verb|gunicorn.service|.
+    \begin{listing}[H]
+        \begin{minted}{bash}
+[Unit]
+Description=gunicorn socket
+[Socket]
+ListenStream=/run/gunicorn.sock
+[Install]
+WantedBy=sockets.target
+        \end{minted}
+        \caption{/etc/systemd/system/gunicorn.socket}
+        \label{code:gunicorn.socket}
+    \end{listing}
+    Ce fichier permet de créer un \emph{socket} (ou une \emph{interface de connexion}), qui est, pour faire simple, un moyen que plusieurs applications peuvent utiliser pour communiquer.
+    Nous allons utiliser cela pour connecter Gunicorn à Nginx.
+    \begin{listing}[H]
+        \begin{minted}[breaklines]{bash}
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+[Service]
+User=toto
+Group=www-data
+WorkingDirectory=/home/toto/CLONE/django/SAE24
+ExecStart=/home/toto/CLONE/django/SAE24/.venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/run/gunicorn.sock SAE24.wsgi:application
+[Install]
+WantedBy=multi-user.target
+        \end{minted}
+        \caption{/etc/systemd/system/gunicorn.service}
+        \label{code:gunicorn.service} 
+    \end{listing}
+    La création du service nous permet de lancer Gunicorn sous la forme d'un \emph{daemon}.
+    Dans ce fichier, nous précisons l'utilisateur et le groupe avec lesquels le service doit être exécuté ainsi que le service doit être exécuté après l'initialisation du réseau.
+    Nous pouvons maintenant activer Gunicorn au démarrage avec les commandes \verb|systemctl start gunicorn.socket| et \verb|systemctl enable gunicorn.socket|.
+
+    \subsection{Nginx}
+    Une fois Gunicorn correctement paramétré, nous pouvons configurer Nginx pour rediriger les connexions sur le socket. Pour cela il faut créer un fichier \emph{site} en suivant la bonne syntaxe.
+    \begin{listing}[H]
+        \begin{minted}[breaklines]{bash}
+server {
+    listen 80;
+    server_name django-serv.rt13.lab;
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        root /home/toto/CLONE/django/SAE24;
+    }
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/gunicorn.sock;
+    }
+}
+        \end{minted}
+        \caption{/etc/nginx/sites-available/sae24}
+        \label{code:sae23-site} 
+    \end{listing}
+    Pour cet exemple, Nginx écoute sur le port 80 et si un client se connecte en utilisant le domaine \verb|django-serv.rt13.lab|, il redirige /static vers le répertoire configuré dans, le reste est redirigé vers le socket Gunicorn.
+    Une fois ce fichier crée, nous devons l'activer avec un lien symbolique créé par la commande \verb|ln -s /etc/nginx/sites-available/sae23 /etc/nginx/sites-enabled/|.
+    Nous devons ensuite utiliser \verb|manage.py| pour faire un \verb|makemigration|, un \verb|migrate| ainsi qu'un \verb|collectstatic|.
+
+    Pour finir, nous pouvons redémarrer le service Nginx avec la commande \verb|systemctl restart nginx| pour prendre en compte les changements. 
+    
+    {\bf Nous avons également écrit un script exécutant automatiquement toutes les étapes du déploiement}, il est donc possible d'utiliser \verb|curl| pour l'exécuter dans une machine virtuelle sans interface graphique.
 \end{document}
