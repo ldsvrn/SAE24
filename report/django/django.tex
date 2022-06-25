@@ -204,8 +204,9 @@ def save_modif_sensors(request, id):
     \label{django:views:modif2}
 \end{listing}
 En code \ref{django:views:modif2}, nous créons une copie du capteur que nous souhaitons modifier sans cela, notre bouton modifier supprimerais l'adresse MAC et la pièce du capteur modifié, car notre form ne contient pas ces informations.
+Nous vérifions également si le nom choisi n'est pas déjà utilisé par un autre capteur, si cela est le cas, nous ne sauvegardons pas la modification.
 
-\subsubsection{Views de Filtre}
+\subsubsection{Filtre}
 Pour créer des filtres facilement, nous pouvons utiliser la fonction \verb|filter()| des objets de model Django. Le filtre le plus simple est celui en code \ref{django:views:filtre1}, qui permet de filtrer les données par capteur.
 \begin{listing}[H]
     \begin{minted}[breaklines]{python}
@@ -256,4 +257,61 @@ def filtre_par_date_et_capteur(request, id):
     \label{django:views:filtre3}
 \end{listing}
 
+\subsubsection{Exportation en CSV}
+Maintenant que nous pouvons lister et filter nos capteurs et données, nous pouvons utiliser le module \verb|csv| mis à disposition par Python pour facilement créer dynamiquement des fichiers de valeurs séparées par des virgules.
+\begin{listing}[H]
+    \begin{minted}[breaklines]{python}
+def export_csv(request, id):
+    data = SensorsData.objects.filter(sensor = id)
+    response = HttpResponse(
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename="export.csv"'},
+    )
+
+    writer = csv.writer(response)
+    writer.writerow(['timestamp', 'macaddr', 'piece', 'emplacement', 'nom', 'temp'])
+    for i in data:
+        writer.writerow(
+            [i.datetime, 
+            i.sensor.macaddr, 
+            i.sensor.piece,
+            i.sensor.emplacement,
+            i.sensor.nom,
+            i.temp])
+
+    return response
+    \end{minted}
+    \caption{Génération d'un fichier csv}
+    \label{django:views:csv}
+\end{listing} 
+En code \ref{django:views:csv}, nous utilisons une boucle for pour générer ce fichier ligne par ligne avec la méthode \verb|writerow()| de l'objet \verb|writer| du module importé.
+
+\subsubsection{Templates}
+Les templates sont à écrire en même temps ou même avant les views.
+Elles utilisent des boucles for pour permettre à Django de créer des pages dynamiquement.
+Voici un exemple simplifié de template utilisant un modèle avec \verb|{% extends MODELE %}| pour simplifier la création de la mise en page.
+\begin{listing}[H]
+    \begin{minted}[breaklines]{html}
+{% block content %}
+<table class="table is-fullwidth is-hoverable">
+    <thead>
+    <tr>
+        <!-- Titres colonnes avec des <td>-->
+    </tr>
+    </thead>
+    {% for temps in data %}
+    <tbody>
+    <tr>
+        <!-- Données avec des <td> et en utiliant temps.VAL -->
+    </tr>
+    </tbody>
+    {% endfor %}
+</table>
+{% endblock content %}
+    \end{minted}
+    \caption{}
+    \label{}
+\end{listing}
+
+\section{Déploiement}
 \end{document}
